@@ -1,14 +1,20 @@
 export const roles = [
   {
     name: 'Store Admin',
-    value: 'store-admin'
+    value: 'STORE_MANAGER'
   },
   {
     name: 'Sales Operator',
-    value: 'sales-operator'
+    value: 'SALES_MANAGER'
   },
   {
     name: 'Sales Purchase Operator',
-    value: 'sales-purchase-operator'
-  },
+    value: 'SALE_PURCHASE_MANAGER'
+  }
 ]
+
+export const roleMap = {
+  STORE_MANAGER: 'Store Admin',
+  SALES_MANAGER: 'Sales Operator',
+  SALES_PURCHASE_MANAGER: 'Sales Purchase Operator',
+}

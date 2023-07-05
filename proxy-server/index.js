@@ -13,7 +13,6 @@ app.use(cors({
 
 const port = process.env.PORT || 5000;
 const backendUrl = 'http://stock.staging.digitalregister.in:8080/api/v1'
-const storeID = 'acf2d038-7742-461d-9ce9-d5322f96be74'
 const businessId = 'VgwLq1sKrUdkxsSuTKEhEF5b8KG3'
 
 app.get("/", (req, res) => {
@@ -21,14 +20,14 @@ app.get("/", (req, res) => {
 });
 
 // To get all the staffs for a particular store
-app.post('/staff/get', async (req, res) => {
+app.get('/staff/get/:storeID', async (req, res) => {
   const completeStaffsData = []
   try {
     const staffs = await axios.post(`${backendUrl}/staff/get`, {
-      businessIds: req.body.businessIds
+      businessIds: [businessId]
     })
 
-    const staffInfo = await axios.get(`${backendUrl}/staffAccess/get/${storeID}`)
+    const staffInfo = await axios.get(`${backendUrl}/staffAccess/get/${req.params.storeID}`)
 
     staffInfo?.data.storeManagerModels?.map((item) => {
       const staff = {
@@ -37,7 +36,7 @@ app.post('/staff/get', async (req, res) => {
         businessId: item.staffModel.businessId,
         name: item.staffModel.name,
         mobile: item.staffModel.mobile,
-        role: 'Store Admin',
+        access_type: 'STORE_MANAGER',
       }
 
       completeStaffsData.push(staff)
@@ -50,7 +49,7 @@ app.post('/staff/get', async (req, res) => {
         businessId: item.staffModel.businessId,
         name: item.staffModel.name,
         mobile: item.staffModel.mobile,
-        role: 'Sales Operator',
+        access_type: 'SALES_MANAGER',
       }
 
       completeStaffsData.push(staff)
@@ -63,7 +62,7 @@ app.post('/staff/get', async (req, res) => {
         businessId: item.staffModel.businessId,
         name: item.staffModel.name,
         mobile: item.staffModel.mobile,
-        role: 'Sales Purchase Operator',
+        access_type: 'SALE_PURCHASE_MANAGER',
       }
 
       completeStaffsData.push(staff)
@@ -94,10 +93,24 @@ app.post('/staff/add', async (req, res) => {
     const newStaff = await axios.post(`${backendUrl}/staff/add`, {
       name: req.body.name,
       phone: req.body.phone,
-      businessId: businessId
+      businessId: businessId,
     })
 
-    res.json(newStaff.data)
+    console.log(newStaff.data)
+    const assignRole = await axios.post(`${backendUrl}/staffAccess/add`, {
+      staffId: newStaff.data.staffId,
+      access_type: req.body.role,
+      storeId: req.body.storeId, 
+    })
+
+
+    res.json({
+      staffId: newStaff.data.staffId,
+      businessId: newStaff.data.businessId,
+      name: newStaff.data.name,
+      mobile: newStaff.data.mobile,
+      assign_type: req.body.role,
+    })
   } catch (error) {
     console.log(error)
   }
@@ -116,14 +129,42 @@ app.delete('/staff/delete/:staffId', async (req, res) => {
 
 app.put('/staff/update/', async (req, res) => {
   try {
-    const updatedStaff = await axios.put(`${backendUrl}/staff/update/`, {
+    const updatedStaff = await axios.post(`${backendUrl}/staff/update/`, {
       staffId: req.body.staffId,
       name: req.body.name,
       phone: req.body.phone,
       businessId: businessId
     })
 
+    console.log(req.body)
+
+    const assignRole = await axios.post(`${backendUrl}/staffAccess/add`, {
+      staffId: req.body.staffId,
+      access_type: req.body.access_type,
+      storeId: req.body.storeId, 
+    })
+
     res.json(updatedStaff.data.response)
+  } catch (error) {
+    console.log(error.message)
+  }
+})
+
+app.post('/staff/removeRole', async (req, res) => {
+  const assignRole = await axios.post(`${backendUrl}/staffAccess/add`, {
+    staffId: req.body.staffId,
+    access_type: 'fafsxgdfsg',
+    storeId: req.body.storeId, 
+  })
+
+  res.json(assignRole.data)
+})
+
+app.get('/store/getStore/:bussinessId', async (req, res) => {
+  try {
+    const stores = await axios.get(`${backendUrl}/store/getStore/${req.params.bussinessId}`)
+
+    res.json(stores.data.response)
   } catch (error) {
     console.log(error.message)
   }

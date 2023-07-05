@@ -5,8 +5,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 
-export default function CustomDropDown({ list, ans, setAns, label }) {
-
+export default function RoleDropDown({ list, ans, setAns, label, defaultValue }) {
   const handleChange = (event) => {
     setAns(event.target.value);
   };
@@ -16,13 +15,14 @@ export default function CustomDropDown({ list, ans, setAns, label }) {
       <FormControl fullWidth size="small">
         <InputLabel id="demo-simple-select-label">{label}</InputLabel>
         <Select
+          defaultValue={defaultValue}
           labelId="demo-simple-select-label"
           id="demo-simple-select"
           value={ans}
           label={label}
           onChange={handleChange}
         >
-          {list?.map((item) => (
+          {list.storeId !== null && list?.map((item) => (
             <MenuItem value={item.value}>{item.name}</MenuItem>
           ))}
         </Select>

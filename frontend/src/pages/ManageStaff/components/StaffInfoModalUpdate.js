@@ -14,11 +14,18 @@ import { API, businessId } from "../../../assets/constants";
 import StoreDropDown from "../../../components/StoreDropDown";
 import RoleDropDown from "../../../components/RoleDropDown copy";
 
-export default function StaffInfoModal({ setTrigger, handleClose, handleOpen, open}) {
+export default function StaffInfoModalUpdate({ trigger, setTrigger, handleClose, open, data}) {
   const [role, setRole] = useState('')
   const [store, setStore] = useState('')
   const [name, setName] = useState('')
   const [mobile, setMobile] = useState('')
+
+  useEffect(() => {
+    setName(data.name)
+    setMobile(data.phone)
+    setRole(data.access_type)
+    setStore(data.store)
+  }, [data, trigger])
 
   const [stores, setStores] = useState([])
 
@@ -29,13 +36,6 @@ export default function StaffInfoModal({ setTrigger, handleClose, handleOpen, op
       console.log(err)
     })
   }, [])
-
-  const clearInputs = () => {
-    setName('')
-    setMobile('')
-    setRole('')
-    setStore('')
-  }
 
   const handleSubmit = () => {
     if(name === ''){
@@ -48,25 +48,15 @@ export default function StaffInfoModal({ setTrigger, handleClose, handleOpen, op
       return
     }
 
-    if(role === ''){
-      alert('Role is required')
-      return
-    }
-
-    if(store === ''){
-      alert('Store is required')
-      return
-    }
-
-    axios.post(`${API}/staff/add`, {
+    axios.put(`${API}/staff/update`, {
       name: name,
       phone: mobile,
-      role: role,
+      staffId: data.staffId,
+      access_type: role,
       storeId: store
     }).then((res) => {
       console.log(res)
       handleClose()
-      clearInputs()
       setTrigger(prev => prev + 1)
     }).catch((err) => {
       console.log(err)
@@ -81,7 +71,7 @@ export default function StaffInfoModal({ setTrigger, handleClose, handleOpen, op
       >
         <Box sx={style}>
           <Stack direction={"row"} justifyContent={"space-between"}>
-            <Typography sx={{px: 2, py: 1}}>Add Staff</Typography>
+            {data.name === '' && <Typography sx={{px: 2, py: 1}}>Add Staff</Typography>}
 
             <IconButton onClick={handleClose}>
               <CloseIcon />
@@ -92,7 +82,7 @@ export default function StaffInfoModal({ setTrigger, handleClose, handleOpen, op
             <Grid container sx={{width: '100%'}}>
               <Grid item md={6} sx={{pr: 1}}>
                 <Typography>Staff Name*</Typography>
-                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter Here" style={customInput} />
+                <input defaultValue={data.name} value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter Here" style={customInput} />
               </Grid>
 
               <Grid item md={6} sx={{pl: 1, display: 'flex'}}>
@@ -102,24 +92,24 @@ export default function StaffInfoModal({ setTrigger, handleClose, handleOpen, op
                 </div>
                 <div style={{width: '100%'}}>
                   <Typography>Mobile Number*</Typography>
-                  <input value={mobile} onChange={(e) => setMobile(e.target.value)} placeholder="Enter Here" style={customInput} />
+                  <input defaultValue={data.phone} value={mobile} onChange={(e) => setMobile(e.target.value)} placeholder="Enter Here" style={customInput} />
                 </div>
               </Grid>
 
               <Grid item md={6} sx={{pr: 1, mt: 2}}>
                 <Typography>Select Store*</Typography>
-                <StoreDropDown list={stores} ans={store} setAns={setStore}/>
+                <StoreDropDown list={stores} defaultValue={data.store} ans={store} setAns={setStore}/>
               </Grid>
 
               <Grid item md={6} sx={{pl: 1, mt: 2}}>
                 <Typography>Select Role*</Typography>
-                <RoleDropDown list={roles} ans={role} setAns={setRole}/>
+                <RoleDropDown list={roles} defaultValue={data.access_type} ans={role} setAns={setRole}/>
               </Grid>
             </Grid>
 
-            {role === 'STORE_MANAGER' && <AdminInfo />}
-            {role === 'SALES_MANAGER' && <SalesInfo />}
-            {role === 'SALES_PURCHASE_MANAGER' && <SalesPurchaseInfo />}
+            {role === 'store-admin' && <AdminInfo />}
+            {role === 'sales-operator' && <SalesInfo />}
+            {role === 'sales-purchase-operator' && <SalesPurchaseInfo />}
 
             <Stack direction="row" justifyContent={"flex-end"} sx={{py: 2, mt: 'auto'}}>
               <Button onClick={handleClose} sx={{width: '150px', mr: 2, textTransform: 'capitalize'}} variant="outlined">Cancel</Button>
